@@ -7,8 +7,24 @@ It started as a university exercise and was rebuilt in place, with its history k
 containerised application: layered packages, Flyway-owned schema, role-based security with two-factor
 sign-in, audit trail, PDF invoices, email, and CI that scans for vulnerabilities and secrets.
 
+## Screenshots
+
+Taken from the `demo` profile with its sample data.
+
+| Storefront | Storefront (dark) |
+| --- | --- |
+| ![Storefront](docs/screenshots/storefront-light.png) | ![Storefront in dark mode](docs/screenshots/storefront-dark.png) |
+| ![Product list](docs/screenshots/products-light.png) | ![Product page with picture carousel](docs/screenshots/product-dark.png) |
+
+| Dashboard | Variants workspace |
+| --- | --- |
+| ![Dashboard](docs/screenshots/dashboard-light.png) | ![Variants table with bulk actions](docs/screenshots/variants-light.png) |
+| ![Dashboard in dark mode](docs/screenshots/dashboard-dark.png) | ![Orders](docs/screenshots/orders-light.png) |
+
+<img src="docs/screenshots/storefront-mobile.png" alt="Storefront on a phone" width="260"> <img src="docs/screenshots/products-mobile.png" alt="Product list on a phone" width="260">
 ## Contents
 
+- [Screenshots](#screenshots)
 - [Features](#features)
 - [Roles](#roles)
 - [Security](#security)
