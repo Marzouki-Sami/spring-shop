@@ -74,13 +74,7 @@
             <div th:replace="~{storefront/card :: card(${p})}"></div>
         </div>
     </div>
-    <nav class="mt-4" aria-label="Pages" th:if="${page.totalPages > 1}">
-        <ul class="pagination justify-content-center">
-            <li class="page-item" th:classappend="${page.first} ? 'disabled'"><a class="page-link" th:href="${links.to(page.number - 1)}">Previous</a></li>
-            <li class="page-item disabled"><span class="page-link" th:text="${page.number + 1} + ' / ' + ${page.totalPages}">1 / 1</span></li>
-            <li class="page-item" th:classappend="${page.last} ? 'disabled'"><a class="page-link" th:href="${links.to(page.number + 1)}">Next</a></li>
-        </ul>
-    </nav>
+    <nav th:replace="~{fragments/lists :: pages(${page}, ${links.to(page.number - 1)}, ${links.to(page.number + 1)}, 'justify-content-center', 'mt-4')}"></nav>
 </main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 <th:block th:replace="~{fragments/layout :: scripts}"></th:block>

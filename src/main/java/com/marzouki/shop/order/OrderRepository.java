@@ -41,9 +41,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>,
 
     List<Order> findByUserIdOrderByCreatedAtDescIdDesc(Long userId);
 
-    @EntityGraph(attributePaths = "user")
-    List<Order> findAllByOrderByCreatedAtDescIdDesc();
-
-    @EntityGraph(attributePaths = "user")
-    List<Order> findByStatusOrderByCreatedAtDescIdDesc(OrderStatus status);
+    /** The latest orders of one person, for a page that should stay light however much they have bought. */
+    List<Order> findTop50ByUserIdOrderByCreatedAtDescIdDesc(Long userId);
 }

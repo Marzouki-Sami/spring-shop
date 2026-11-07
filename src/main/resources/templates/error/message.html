@@ -5,11 +5,12 @@
 <nav th:replace="~{fragments/layout :: nav('')}"></nav>
 <main class="container narrow">
     <div class="alert alert-warning">
-        <h1 class="h5" th:text="${title}">Something went wrong</h1>
+        <h1 class="h4" th:text="${title}">Something went wrong</h1>
         <p class="mb-0" th:text="${message}"></p>
     </div>
     <a class="btn btn-outline-secondary" th:href="@{/}">Back to the shop</a>
 </main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
 <th:block th:replace="~{fragments/layout :: scripts}"></th:block>
 </body>
 </html>

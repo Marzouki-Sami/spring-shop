@@ -84,8 +84,4 @@ public class ProductVariant {
                 .map(OptionValue::getLabel)
                 .collect(Collectors.joining(" / "));
     }
-
-    public boolean isLowOn(int level) {
-        return stock <= level;
-    }
 }

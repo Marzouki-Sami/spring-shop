@@ -55,7 +55,7 @@ public class CustomerController {
     public String detail(@PathVariable Long id, Model model) {
         CustomerRow row = customers.summary(id).orElseThrow(() -> new NotFoundException("Customer", id));
         User user = users.findById(id).orElseThrow(() -> new NotFoundException("Customer", id));
-        List<Order> history = orders.findByUserIdOrderByCreatedAtDescIdDesc(id);
+        List<Order> history = orders.findTop50ByUserIdOrderByCreatedAtDescIdDesc(id);
         model.addAttribute("customer", row);
         model.addAttribute("user", user);
         model.addAttribute("orders", history);

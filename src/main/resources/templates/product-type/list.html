@@ -3,7 +3,6 @@
 <head th:replace="~{fragments/layout :: head('Product types')}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: nav('product-types')}"></nav>
-<div th:replace="~{fragments/layout :: flash}"></div>
 <main class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">Product types</h1>
@@ -20,7 +19,7 @@
                     <td class="text-end actions">
                         <a class="btn btn-sm btn-outline-secondary" th:href="@{/manage/product-types/{id}/edit(id=${t.id})}">Edit</a>
                         <form th:action="@{/manage/product-types/{id}/delete(id=${t.id})}" method="post" data-confirm="Delete this product type?">
-                            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                            <button class="btn btn-sm btn-outline-danger" type="submit" th:attr="aria-label=${'Delete ' + t.name}">Delete</button>
                         </form>
                     </td>
                 </tr>

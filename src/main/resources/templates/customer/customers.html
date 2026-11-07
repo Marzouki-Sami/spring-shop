@@ -51,13 +51,7 @@
         </div>
         <div class="panel-footer d-flex flex-wrap justify-content-between align-items-center gap-2" th:if="${rows.totalElements > 0}">
             <span class="small text-secondary" th:text="'Showing ' + (${rows.number} * ${rows.size} + 1) + '-' + (${rows.number} * ${rows.size} + ${rows.numberOfElements}) + ' of ' + ${rows.totalElements}">Showing 1-25 of 60</span>
-            <nav aria-label="Pages" th:if="${rows.totalPages > 1}">
-                <ul class="pagination pagination-sm mb-0">
-                    <li class="page-item" th:classappend="${rows.first} ? 'disabled'"><a class="page-link" th:href="@{/manage/customers(q=${q},sort=${sort},size=${size},page=${rows.number - 1})}">Previous</a></li>
-                    <li class="page-item disabled"><span class="page-link" th:text="${rows.number + 1} + ' / ' + ${rows.totalPages}">1 / 3</span></li>
-                    <li class="page-item" th:classappend="${rows.last} ? 'disabled'"><a class="page-link" th:href="@{/manage/customers(q=${q},sort=${sort},size=${size},page=${rows.number + 1})}">Next</a></li>
-                </ul>
-            </nav>
+            <nav th:replace="~{fragments/lists :: pages(${rows}, @{/manage/customers(q=${q},sort=${sort},size=${size},page=${rows.number - 1})}, @{/manage/customers(q=${q},sort=${sort},size=${size},page=${rows.number + 1})}, 'pagination-sm mb-0', '')}"></nav>
         </div>
     </section>
 </main>

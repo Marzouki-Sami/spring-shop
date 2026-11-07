@@ -3,7 +3,6 @@
 <head th:replace="~{fragments/layout :: head('My account')}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: nav('account')}"></nav>
-<div th:replace="~{fragments/layout :: flash}"></div>
 <main class="container">
     <h1 class="h3 mb-1">My account</h1>
     <p class="text-secondary mb-4"><span th:text="${email}">email</span> · <span class="badge text-bg-secondary role-badge" th:text="${role}">CUSTOMER</span></p>

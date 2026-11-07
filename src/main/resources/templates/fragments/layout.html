@@ -62,7 +62,7 @@
                     </ul>
                 </li>            </ul>
             <div class="nav-actions d-flex flex-wrap align-items-center gap-2">
-            <a class="cart-link" th:href="@{/cart}" aria-label="Shopping cart"><i class="bi bi-cart3"></i><span class="cart-count" th:if="${cartCount > 0}" th:text="${cartCount}">2</span></a>
+            <a class="cart-link" th:href="@{/cart}" th:attr="aria-label=${cartCount > 0 ? 'Shopping cart, ' + cartCount + ' items' : 'Shopping cart'}"><i class="bi bi-cart3"></i><span class="cart-count" th:if="${cartCount > 0}" th:text="${cartCount}">2</span></a>
             <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch between light and dark mode" title="Switch theme"><i class="bi bi-circle-half"></i></button>
             <div class="d-flex align-items-center gap-2" sec:authorize="!isAuthenticated()">
                 <a class="btn btn-link nav-signin" th:href="@{/login}">Sign in</a>
@@ -91,7 +91,6 @@
     </div>
 </nav>
 <!-- Kept so pages can still include it; messages now appear as toasts, rendered once by the scripts fragment. -->
-<th:block th:fragment="flash"></th:block>
 <footer th:fragment="footer" class="site-footer">
     <div class="container d-flex flex-wrap justify-content-between gap-2">
         <span>© Shop. A demo store built with Spring Boot.</span>

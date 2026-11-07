@@ -30,6 +30,13 @@ public class RefreshTokenService {
     private final JwtProperties properties;
     private final com.marzouki.shop.security.mfa.TwoFactorService twoFactor;
 
+    /** Expired tokens can no longer be used or matter for theft detection, so they are removed every night. */
+    @org.springframework.scheduling.annotation.Scheduled(cron = "0 45 3 * * *")
+    @Transactional
+    public void purgeExpired() {
+        tokens.deleteExpired(java.time.Instant.now());
+    }
+
     /** A newly issued token: the raw value is shown once, the hash is what gets stored. */
     public record Issued(String value, User user) {
     }

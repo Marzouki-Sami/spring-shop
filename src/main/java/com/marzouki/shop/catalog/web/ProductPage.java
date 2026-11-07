@@ -42,7 +42,7 @@ public record ProductPage(boolean optioned, List<Group> groups, Long initialVari
                 v.getStock(), Money.format(v.getEffectivePrice()), v.getLabel())).toList();
         try {
             // "<" is escaped so the data can never close its own script element.
-            String json = mapper.writeValueAsString(infos).replace("<", "\\u003c");
+            String json = com.marzouki.shop.common.ScriptJson.escape(mapper.writeValueAsString(infos));
             return new ProductPage(product.isOptioned(), groups, initial == null ? null : initial.getId(), json,
                     initial == null ? Money.format(product.getPrice()) : Money.format(initial.getEffectivePrice()));
         } catch (JsonProcessingException e) {

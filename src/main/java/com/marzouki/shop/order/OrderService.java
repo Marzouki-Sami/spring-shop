@@ -96,7 +96,8 @@ public class OrderService {
         for (OrderItem item : order.getItems()) {
             movements.save(new StockMovement(item.getProduct().getId(), item.getVariant().getId(),
                     -item.getQuantity(), StockMovement.Reason.ORDER, order.getId()));
-        }        events.publishEvent(new OrderEvents.OrderPlaced(order.getId()));
+        }
+        events.publishEvent(new OrderEvents.OrderPlaced(order.getId()));
         return order;
     }
 
@@ -111,15 +112,6 @@ public class OrderService {
             throw new NotFoundException("Order", id);
         }
         return order;
-    }
-
-    public List<Order> forUser(Long userId) {
-        return orders.findByUserIdOrderByCreatedAtDescIdDesc(userId);
-    }
-
-    public List<Order> all(OrderStatus status) {
-        return status == null ? orders.findAllByOrderByCreatedAtDescIdDesc()
-                : orders.findByStatusOrderByCreatedAtDescIdDesc(status);
     }
 
     @Transactional
@@ -156,7 +148,8 @@ public class OrderService {
                             item.getVariant().getId(), item.getQuantity(), StockMovement.Reason.CANCELLATION,
                             order.getId()));
                 }
-            }            if (order.getCouponCode() != null) {
+            }
+            if (order.getCouponCode() != null) {
                 coupons.findByCodeIgnoreCase(order.getCouponCode()).ifPresent(c -> coupons.releaseUse(c.getId()));
             }
         }
@@ -235,9 +228,5 @@ public class OrderService {
             default -> org.springframework.data.domain.Sort.by("createdAt").descending().and(org.springframework.data.domain.Sort.by("id").descending());
         };
         return coupons.findAll(com.marzouki.shop.common.Specs.<Coupon>text(query.like(), "code").and(status), query.pageRequest(sort));
-    }
-
-    public List<Coupon> coupons() {
-        return coupons.findAllByOrderByCreatedAtDescIdDesc();
     }
 }
