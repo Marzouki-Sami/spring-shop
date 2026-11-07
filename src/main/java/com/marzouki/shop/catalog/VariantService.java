@@ -82,6 +82,7 @@ public class VariantService {
             return switch (status) {
                 case ACTIVE -> new Filter(List.of(true), 0, Integer.MAX_VALUE);
                 case INACTIVE -> new Filter(List.of(false), 0, Integer.MAX_VALUE);
+                // Sold-out items have their own filter, so LOW means running low but not yet gone.
                 case LOW -> new Filter(List.of(true), 1, lowLevel);
                 case OUT -> new Filter(List.of(true, false), 0, 0);
                 default -> new Filter(List.of(true, false), 0, Integer.MAX_VALUE);
@@ -96,6 +97,7 @@ public class VariantService {
         }
         return types.findWithOptionsById(product.getProductType().getId()).orElseThrow().getOptionTypes();
     }
+
     public ProductVariant getForStock(Long variantId) {
         return variants.findWithDetailsById(variantId).orElseThrow(() -> new NotFoundException("Variant", variantId));
     }
@@ -168,7 +170,8 @@ public class VariantService {
     @Transactional
     public ProductVariant update(Long productId, Long variantId, VariantForm form) {
         ProductVariant variant = get(productId, variantId);
-        if (variants.existsBySkuIgnoreCaseAndIdNot(form.getSku(), variantId)) {
+        if (variants.existsBySkuIgnoreCaseAndIdNot(form.getSku(), variantId)
+                || products.existsBySkuIgnoreCaseAndIdNot(form.getSku(), productId)) {
             throw new ConflictException("SKU '" + form.getSku() + "' is already used");
         }
         variant.setSku(form.getSku());
@@ -270,7 +273,10 @@ public class VariantService {
         if (form.getScope() == BulkVariantForm.Scope.FILTERED) {
             Filter f = Filter.of(query.getStatus(), lowLevel(productId));
             List<Long> ids = variants.searchIds(productId, f.actives(), f.minStock(), f.maxStock(), query.likePattern(),
-                    PageRequest.of(0, MAX_BULK));
+                    PageRequest.of(0, MAX_BULK + 1));
+            if (ids.size() > MAX_BULK) {
+                throw new ConflictException("More than " + MAX_BULK + " variants match. Narrow the filter or select rows instead.");
+            }
             return ids.isEmpty() ? List.of() : variants.findByProductAndIds(productId, ids);
         }
         Set<Long> ids = new LinkedHashSet<>(form.getIds());

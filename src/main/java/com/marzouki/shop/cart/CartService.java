@@ -32,7 +32,7 @@ public class CartService {
         if (variant.getStock() == 0) {
             throw new ConflictException(describe(variant) + " is sold out");
         }
-        int wanted = cart.quantityOf(variantId) + Math.max(quantity, 1);
+        int wanted = cart.quantityOf(variantId) + Math.min(Math.max(quantity, 1), Cart.MAX_PER_LINE);
         cart.set(variantId, Math.min(wanted, Math.min(variant.getStock(), Cart.MAX_PER_LINE)));
     }
 

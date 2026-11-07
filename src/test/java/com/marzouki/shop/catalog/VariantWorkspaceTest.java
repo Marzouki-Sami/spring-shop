@@ -369,4 +369,28 @@ class VariantWorkspaceTest {
         productService.update(tee.getId(), form);
         assertThat(variantService.overview(tee.getId(), query("", "LOW", 25)).page().getTotalElements()).isEqualTo(1);
         assertThat(productService.get(tee.getId()).getLowStockLevel()).isEqualTo(20);
+    }
+    @Test
+    void thePriceFilterLooksAtWhatEachVariantReallyCosts() {
+        variantService.bulk(tee.getId(), new VariantQuery(), withPrice(bulk(BulkVariantForm.Action.SET_PRICE, idsOfFirst(2)), "99.00"));
+        assertThat(shopIds("90", "")).contains(tee.getId());
+        assertThat(shopIds("100", "")).doesNotContain(tee.getId());
+        assertThat(shopIds("", "20")).doesNotContain(tee.getId());
+        assertThat(shopIds("", "30")).contains(tee.getId());
+    }
+
+    @Test
+    void aProductSkuCannotCollideWithOneOfItsVariants() {
+        String taken = variantService.productWithVariants(tee.getId()).getVariants().get(0).getSku();
+        ProductForm form = productService.formFor(tee.getId());
+        form.setSku(taken);
+        assertThatThrownBy(() -> productService.update(tee.getId(), form))
+                .isInstanceOf(ConflictException.class).hasMessageContaining("already used");
+    }
+
+    private List<Long> shopIds(String min, String max) {
+        ShopQuery shop = new ShopQuery();
+        shop.setMinPrice(min);
+        shop.setMaxPrice(max);
+        return productService.shop(shop).map(Product::getId).getContent();
     }}

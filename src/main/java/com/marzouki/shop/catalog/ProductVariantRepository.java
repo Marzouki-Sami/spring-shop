@@ -58,10 +58,23 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
     boolean existsBySkuIgnoreCaseAndIdNot(String sku, Long id);
 
-    @Query("select distinct v from ProductVariant v join fetch v.product p left join fetch v.optionValues ov "
-            + "left join fetch ov.optionType where v.active = true and p.active = true "
-            + "and v.stock <= coalesce(p.lowStockThreshold, :level) order by v.stock asc, p.name asc")
-    List<ProductVariant> lowStock(@Param("level") int level, Pageable limit);
+    @Query("select v.id from ProductVariant v join v.product p where v.active = true and p.active = true "
+            + "and v.stock <= coalesce(p.lowStockThreshold, :level) order by v.stock asc, p.name asc, v.id asc")
+    List<Long> lowStockIds(@Param("level") int level, Pageable limit);
+
+    @EntityGraph(attributePaths = {"product", "optionValues", "optionValues.optionType"})
+    List<ProductVariant> findWithDetailsByIdIn(Collection<Long> ids);
+
+    /** The lowest-stock items first. The page is cut on ids so the database, not memory, applies the limit. */
+    default List<ProductVariant> lowStock(int level, Pageable limit) {
+        List<Long> ids = lowStockIds(level, limit);
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        java.util.Map<Long, ProductVariant> byId = new java.util.HashMap<>();
+        findWithDetailsByIdIn(ids).forEach(v -> byId.put(v.getId(), v));
+        return ids.stream().map(byId::get).filter(java.util.Objects::nonNull).toList();
+    }
 
     /** Takes stock only if enough is left, in one atomic statement so two buyers can never oversell. */
     @Modifying(flushAutomatically = true)

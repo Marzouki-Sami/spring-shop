@@ -6,6 +6,7 @@ import com.marzouki.shop.api.dto.CatalogDtos.ProductResponse;
 import com.marzouki.shop.catalog.CategoryRepository;
 import com.marzouki.shop.catalog.ProductRepository;
 import com.marzouki.shop.catalog.ProductService;
+import com.marzouki.shop.catalog.ShopQuery;
 import com.marzouki.shop.catalog.dto.ProductForm;
 import com.marzouki.shop.common.NotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,8 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,14 +49,12 @@ public class CatalogApiController {
                                                 @RequestParam(defaultValue = "name") String sort,
                                                 @RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "12") int size) {
-        Sort order = switch (sort) {
-            case "price-asc" -> Sort.by("price").ascending();
-            case "price-desc" -> Sort.by("price").descending();
-            case "newest" -> Sort.by("createdAt").descending().and(Sort.by("id").descending());
-            default -> Sort.by("name").ascending();
-        };
-        PageRequest request = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), MAX_PAGE_SIZE), order);
-        return PageResponse.of(productRepository.search(q.trim(), category, request), ProductResponse::of);
+        ShopQuery query = new ShopQuery();
+        query.setQ(q);
+        query.setCategory(category);
+        query.setSort(sort);
+        query.setPage(Math.max(page, 0));
+        return PageResponse.of(products.shop(query, Math.min(Math.max(size, 1), MAX_PAGE_SIZE)), ProductResponse::of);
     }
 
     @GetMapping("/products/{id}")

@@ -14,8 +14,9 @@ import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -36,66 +37,68 @@ class NotificationService {
     private final SendThrottle throttle;
     private final com.marzouki.shop.invoice.InvoiceService invoices;
     private final org.springframework.jdbc.core.JdbcTemplate jdbc;
+    private final PlatformTransactionManager transactions;
 
     @org.springframework.scheduling.annotation.Async("mailExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
     void onVerification(UserEvents.VerificationRequested event) {
-        users.findById(event.userId()).filter(u -> throttle.allow("verify", u.getEmail()))
-                .ifPresent(u -> deliver("verification", () -> composer.verification(u, event.token())));
+        deliver("verification", () -> users.findById(event.userId()).filter(u -> throttle.allow("verify", u.getEmail()))
+                .map(u -> composer.verification(u, event.token())).orElse(null));
     }
 
     @org.springframework.scheduling.annotation.Async("mailExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
     void onPasswordReset(UserEvents.PasswordResetRequested event) {
-        users.findById(event.userId()).filter(u -> throttle.allow("reset", u.getEmail()))
-                .ifPresent(u -> deliver("password reset", () -> composer.passwordReset(u, event.token())));
+        deliver("password reset", () -> users.findById(event.userId()).filter(u -> throttle.allow("reset", u.getEmail()))
+                .map(u -> composer.passwordReset(u, event.token())).orElse(null));
     }
 
     @org.springframework.scheduling.annotation.Async("mailExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void onOrderPlaced(OrderEvents.OrderPlaced event) {
-        orders.findWithItemsById(event.orderId())
-                .ifPresent(o -> deliver("order confirmation", () -> withInvoice(composer.orderConfirmation(o), o.getId())));
+        // No wrapping transaction: issuing and drawing the invoice use their own, and none may be held while it renders.
+        try {
+            orders.findWithItemsById(event.orderId())
+                    .ifPresent(o -> send(withInvoice(composer.orderConfirmation(o), o.getId())));
+        } catch (RuntimeException e) {
+            log.error("Could not prepare the order confirmation email", e);
+        }
     }
 
     @org.springframework.scheduling.annotation.Async("mailExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
     void onOrderShipped(OrderEvents.OrderShipped event) {
-        orders.findWithItemsById(event.orderId())
-                .ifPresent(o -> deliver("shipping notice", () -> composer.orderShipped(o)));
+        deliver("shipping notice", () -> orders.findWithItemsById(event.orderId()).map(composer::orderShipped).orElse(null));
     }
 
     @org.springframework.scheduling.annotation.Async("mailExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
     void onLowStock(OrderEvents.LowStock event) {
-        ProductVariant variant = variantRepository.findWithDetailsById(event.variantId()).orElse(null);
-        if (variant == null) {
-            return;
-        }
-        List<User> staff = users.findByRoleInAndEnabledTrueAndLowStockAlertsTrue(List.of(Role.MANAGER, Role.ADMIN));
-        for (User person : staff) {
-            deliver("low stock alert", () -> composer.lowStock(person.getEmail(), variant));
-        }
+        List<Email> mails = inTransaction(() -> {
+            ProductVariant variant = variantRepository.findWithDetailsById(event.variantId()).orElse(null);
+            if (variant == null) {
+                return List.<Email>of();
+            }
+            return users.findByRoleInAndEnabledTrueAndLowStockAlertsTrue(List.of(Role.MANAGER, Role.ADMIN)).stream()
+                    .map(person -> composer.lowStock(person.getEmail(), variant)).toList();
+        });
+        mails.forEach(this::send);
     }
 
     /** Tells people who were waiting for an item that it is available again, at most once a week per item. */
     @org.springframework.scheduling.annotation.Async("mailExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     void onBackInStock(OrderEvents.BackInStock event) {
-        ProductVariant variant = variantRepository.findWithDetailsById(event.variantId()).orElse(null);
-        if (variant == null || !variant.isActive() || !variant.getProduct().isActive() || variant.getStock() <= 0) {
-            return;
-        }
-        for (User person : users.backInStockAudience(variant.getId(), variant.getProduct().getId())) {
-            if (claimAlert(person.getId(), variant.getId())) {
-                deliver("back in stock alert", () -> composer.backInStock(person, variant));
+        List<Email> mails = inTransaction(() -> {
+            ProductVariant variant = variantRepository.findWithDetailsById(event.variantId()).orElse(null);
+            if (variant == null || !variant.isActive() || !variant.getProduct().isActive() || variant.getStock() <= 0) {
+                return List.<Email>of();
             }
-        }
+            return users.backInStockAudience(variant.getId(), variant.getProduct().getId()).stream()
+                    .filter(person -> claimAlert(person.getId(), variant.getId()))
+                    .map(person -> composer.backInStock(person, variant)).toList();
+        });
+        mails.forEach(this::send);
     }
 
     /** True when this person has not been told about this item in the last week. Safe when two alerts race. */
@@ -123,11 +126,29 @@ class NotificationService {
         }
     }
 
+    /** Composes the mail inside a short transaction, then sends it with no database connection held. */
     private void deliver(String what, Supplier<Email> email) {
         try {
-            outbox.send(email.get());
+            Email composed = inTransaction(email);
+            if (composed != null) {
+                send(composed);
+            }
         } catch (RuntimeException e) {
             log.error("Could not prepare the {} email", what, e);
         }
+    }
+
+    private void send(Email email) {
+        try {
+            outbox.send(email);
+        } catch (RuntimeException e) {
+            log.error("Could not send an email to {}", email.to(), e);
+        }
+    }
+
+    private <T> T inTransaction(Supplier<T> work) {
+        TransactionTemplate template = new TransactionTemplate(transactions);
+        template.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return template.execute(status -> work.get());
     }
 }

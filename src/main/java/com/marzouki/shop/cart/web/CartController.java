@@ -35,7 +35,9 @@ public class CartController {
             carts.add(cart, variantId, quantity);
             int now = cart.quantityOf(variantId);
             if (now < before + Math.max(quantity, 1)) {
-                flash.addFlashAttribute("warning", "Only " + now + " available, so that is all your cart holds now");
+                flash.addFlashAttribute("warning", now >= Cart.MAX_PER_LINE
+                        ? "You can order at most " + Cart.MAX_PER_LINE + " of one item at a time"
+                        : "Only " + now + " available, so that is all your cart holds now");
             } else {
                 flash.addFlashAttribute("success", "Added to your cart");
             }

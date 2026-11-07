@@ -41,4 +41,9 @@ build/
 mail-outbox/
 
 # Uploaded product images
-data/
+/data/
+
+# Tooling and OS noise
+.impeccable/
+*.log
+.DS_Store
