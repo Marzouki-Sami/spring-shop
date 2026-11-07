@@ -35,6 +35,10 @@ public class ProductService {
 
     /** One page of the shop: only active products, filtered and sorted as the customer chose. */
     public org.springframework.data.domain.Page<Product> shop(ShopQuery query) {
+        return shop(query, ShopQuery.PAGE_SIZE);
+    }
+
+    public org.springframework.data.domain.Page<Product> shop(ShopQuery query, int pageSize) {
         org.springframework.data.domain.Sort sort = switch (query.getSort()) {
             case "price-asc" -> org.springframework.data.domain.Sort.by("price").ascending().and(org.springframework.data.domain.Sort.by("id"));
             case "price-desc" -> org.springframework.data.domain.Sort.by("price").descending().and(org.springframework.data.domain.Sort.by("id"));
@@ -43,7 +47,7 @@ public class ProductService {
             default -> org.springframework.data.domain.Sort.by("name").ascending().and(org.springframework.data.domain.Sort.by("id"));
         };
         var page = products.findAll(ProductSpecs.storefront(query),
-                org.springframework.data.domain.PageRequest.of(query.getPage(), ShopQuery.PAGE_SIZE, sort));
+                org.springframework.data.domain.PageRequest.of(query.getPage(), pageSize, sort));
         ProductViews.warm(page.getContent());
         return page;
     }
@@ -106,8 +110,9 @@ public class ProductService {
         Long oldType = product.getProductType() == null ? null : product.getProductType().getId();
         boolean typeChanged = !Objects.equals(oldType, form.getProductTypeId());
         boolean skuChanged = !product.getSku().equalsIgnoreCase(form.getSku());
-        if (skuChanged && !typeChanged && !product.isOptioned()) {
-            requireFreeSku(form.getSku(), product.getDefaultVariant().getId());
+        if (skuChanged && !typeChanged) {
+            Long own = product.isOptioned() || product.getDefaultVariant() == null ? null : product.getDefaultVariant().getId();
+            requireFreeVariantSku(form.getSku(), own);
         }
         mapper.apply(form, product);
         attachRelations(product, form);
@@ -117,6 +122,7 @@ public class ProductService {
             }
             product.getVariants().clear();
             products.flush();
+            requireFreeVariantSku(product.getSku(), null);
             if (!product.isOptioned()) {
                 product.addVariant(product.getSku(), 0);
             }
@@ -144,6 +150,13 @@ public class ProductService {
             candidate = base + "-" + counter++;
         }
         return candidate;
+    }
+
+    private void requireFreeVariantSku(String sku, Long ignoreVariantId) {
+        boolean taken = ignoreVariantId == null ? variants.existsBySkuIgnoreCase(sku) : variants.existsBySkuIgnoreCaseAndIdNot(sku, ignoreVariantId);
+        if (taken) {
+            throw new ConflictException("SKU '" + sku + "' is already used");
+        }
     }
 
     private void requireFreeSku(String sku, Long ignoreVariantId) {

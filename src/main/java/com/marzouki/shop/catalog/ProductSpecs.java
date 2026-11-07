@@ -50,11 +50,19 @@ final class ProductSpecs {
             } else if (q.getCategory() != null) {
                 all.add(cb.equal(root.get("subcategory").get("category").get("id"), q.getCategory()));
             }
-            if (q.minPriceValue() != null) {
-                all.add(cb.greaterThanOrEqualTo(root.<java.math.BigDecimal>get("price"), q.minPriceValue()));
-            }
-            if (q.maxPriceValue() != null) {
-                all.add(cb.lessThanOrEqualTo(root.<java.math.BigDecimal>get("price"), q.maxPriceValue()));
+            if (q.minPriceValue() != null || q.maxPriceValue() != null) {
+                // A variant can carry its own price, so the range is checked against what each variant really costs.
+                all.add(cb.exists(variantWhere(query, cb, root, (b, v, p) -> {
+                    Expression<java.math.BigDecimal> cost = b.coalesce(v.<java.math.BigDecimal>get("price"), p.<java.math.BigDecimal>get("price"));
+                    List<Predicate> range = new ArrayList<>();
+                    if (q.minPriceValue() != null) {
+                        range.add(b.greaterThanOrEqualTo(cost, q.minPriceValue()));
+                    }
+                    if (q.maxPriceValue() != null) {
+                        range.add(b.lessThanOrEqualTo(cost, q.maxPriceValue()));
+                    }
+                    return b.and(range.toArray(Predicate[]::new));
+                })));
             }
             if (q.isInStock()) {
                 all.add(cb.exists(variantWhere(query, cb, root, (b, v, p) -> b.greaterThan(v.<Integer>get("stock"), 0))));

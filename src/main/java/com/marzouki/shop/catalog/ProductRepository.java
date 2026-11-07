@@ -23,16 +23,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>,
     @EntityGraph(attributePaths = {"subcategory", "subcategory.category", "supplier", "productType"})
     Optional<Product> findWithDetailsById(Long id);
 
-    /** Storefront search: active products only, optionally narrowed by text and category. */
-    @EntityGraph(attributePaths = {"subcategory", "subcategory.category"})
-    @Query("""
-            select p from Product p
-            where p.active = true
-              and (lower(p.name) like lower(concat('%', :text, '%')) or lower(p.description) like lower(concat('%', :text, '%')))
-              and (:categoryId is null or p.subcategory.category.id = :categoryId)
-            """)
-    Page<Product> search(@Param("text") String text, @Param("categoryId") Long categoryId, Pageable pageable);
-
     @EntityGraph(attributePaths = {"subcategory", "subcategory.category"})
     List<Product> findTop8ByActiveTrueOrderByCreatedAtDescIdDesc();
 

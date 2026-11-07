@@ -186,10 +186,11 @@ public class VariantController {
         if (!result.hasErrors()) {
             try {
                 stock.adjust(variantId, form.getDelta(), form.getReason(), form.getNote());
-                int now = variants.getForStock(variantId).getStock();
+                ProductVariant updated = variants.getForStock(variantId);
+                int now = updated.getStock();
                 if (now == 0) {
                     flash.addFlashAttribute("warning", "Stock updated. This item is now sold out.");
-                } else if (now <= com.marzouki.shop.order.OrderService.LOW_STOCK_LEVEL) {
+                } else if (now <= updated.getProduct().getLowStockLevel()) {
                     flash.addFlashAttribute("warning", "Stock updated. Only " + now + " left.");
                 } else {
                     flash.addFlashAttribute("success", "Stock updated. " + now + " in stock.");

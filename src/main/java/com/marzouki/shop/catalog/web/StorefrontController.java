@@ -73,9 +73,11 @@ public class StorefrontController {
         model.addAttribute("product", product);
         model.addAttribute("page", ProductPage.of(product, json));
         model.addAttribute("related", relatedProducts.forProduct(id));
-        model.addAttribute("reviews", engagement.reviewsFor(id));
-        model.addAttribute("average", engagement.averageRating(id));
-        model.addAttribute("seo", seo.product(product, engagement.averageRating(id), engagement.reviewsFor(id).size()));
+        var reviews = engagement.reviewsFor(id);
+        var average = engagement.averageRating(id);
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("average", average);
+        model.addAttribute("seo", seo.product(product, average, reviews.size()));
         model.addAttribute("reviewForm", new ReviewForm());
         if (me != null) {
             model.addAttribute("wished", engagement.isWished(me.getId(), id));

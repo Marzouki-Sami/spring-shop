@@ -20,9 +20,9 @@ services:
       retries: 20
 
   mail:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit:v1.21
     ports:
-      - "8025:8025"
+      - "127.0.0.1:8025:8025"
 
   app:
     build: .
@@ -32,7 +32,7 @@ services:
       mail:
         condition: service_started
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"
     environment:
       SPRING_PROFILES_ACTIVE: mysql,demo
       DB_URL: jdbc:mysql://db:3306/shop
