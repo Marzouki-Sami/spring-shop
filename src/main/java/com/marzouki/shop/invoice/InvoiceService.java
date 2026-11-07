@@ -23,6 +23,8 @@ public class InvoiceService {
 
     private static final int ATTEMPTS = 8;
 
+    private final java.util.concurrent.locks.ReentrantLock issueLock = new java.util.concurrent.locks.ReentrantLock();
+
     /** A finished PDF and the file name to offer for it. */
     public record Document(String filename, byte[] pdf) {
     }
@@ -53,6 +55,16 @@ public class InvoiceService {
      * never duplicates and never a gap.
      */
     public Invoice issue(Long orderId) {
+        // One at a time inside this process so numbers are rarely contended; the unique key and retry cover several instances.
+        issueLock.lock();
+        try {
+            return issueWithRetry(orderId);
+        } finally {
+            issueLock.unlock();
+        }
+    }
+
+    private Invoice issueWithRetry(Long orderId) {
         for (int attempt = 1; ; attempt++) {
             try {
                 return writes.execute(status -> {
