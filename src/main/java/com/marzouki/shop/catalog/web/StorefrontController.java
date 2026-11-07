@@ -66,7 +66,13 @@ public class StorefrontController {
     }
     @GetMapping("/products/{id}")
     @Transactional(readOnly = true)
-    public String detail(@PathVariable Long id, @AuthenticationPrincipal AppUserDetails me, Model model) {
+    public String detail(@PathVariable Long id, @AuthenticationPrincipal AppUserDetails me, Model model,
+                         org.springframework.security.web.csrf.CsrfToken csrf) {
+        // Create the CSRF token (and so a guest's session) before rendering: the page is large enough that the
+        // response may already be on its way when the cart form asks for it, and a session cannot start then.
+        if (csrf != null) {
+            csrf.getToken();
+        }
         Product product = products.findByIdAndActiveTrue(id).orElseThrow(() -> new NotFoundException("Product", id));
         ProductViews.warm(java.util.List.of(product));
         model.addAttribute("product", product);
