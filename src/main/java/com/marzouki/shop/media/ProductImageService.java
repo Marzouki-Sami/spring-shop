@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /** The pictures of a product: adding, ordering, choosing the preview and removing. */
@@ -23,6 +24,7 @@ public class ProductImageService {
 
     private final ProductRepository products;
     private final ImageStorage storage;
+    private final org.springframework.transaction.support.TransactionTemplate writes;
 
     public Product productWithImages(Long productId) {
         Product product = products.findById(productId).orElseThrow(() -> new NotFoundException("Product", productId));
@@ -30,23 +32,31 @@ public class ProductImageService {
         return product;
     }
 
-    @Transactional
+    /**
+     * Decoding and resizing happen first and the files are written before the transaction opens, so a slow
+     * upload never holds a database connection. If the row cannot be saved the files are removed again.
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
     public ProductImage add(Long productId, byte[] data, String altText) {
-        Product product = productWithImages(productId);
-        if (product.getImages().size() >= MAX_IMAGES) {
-            throw new ConflictException("A product can have at most " + MAX_IMAGES + " images");
-        }
         ImageProcessor.Processed processed = ImageProcessor.process(data);
         String fileKey = newKey();
         String thumbKey = newKey();
         storage.save(fileKey, processed.large());
         storage.save(thumbKey, processed.thumb());
-        // If the transaction fails after the files are written, remove them again.
-        afterRollback(() -> {
+        try {
+            return writes.execute(status -> attach(productId, fileKey, thumbKey, processed, altText));
+        } catch (RuntimeException e) {
             storage.delete(fileKey);
             storage.delete(thumbKey);
-        });
+            throw e;
+        }
+    }
 
+    private ProductImage attach(Long productId, String fileKey, String thumbKey, ImageProcessor.Processed processed, String altText) {
+        Product product = productWithImages(productId);
+        if (product.getImages().size() >= MAX_IMAGES) {
+            throw new ConflictException("A product can have at most " + MAX_IMAGES + " images");
+        }
         ProductImage image = new ProductImage();
         image.setProduct(product);
         image.setFileKey(fileKey);
@@ -58,7 +68,6 @@ public class ProductImageService {
         product.getImages().add(image);
         return image;
     }
-
     /** Moves an image one place earlier (negative) or later (positive). */
     @Transactional
     public void move(Long productId, Long imageId, int direction) {
@@ -110,19 +119,6 @@ public class ProductImageService {
             });
         } else {
             keys.forEach(storage::delete);
-        }
-    }
-
-    private void afterRollback(Runnable cleanup) {
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCompletion(int status) {
-                    if (status != STATUS_COMMITTED) {
-                        cleanup.run();
-                    }
-                }
-            });
         }
     }
 

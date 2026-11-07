@@ -163,8 +163,7 @@ until they have an account, and a guest checking out is asked to sign in or regi
   API, is recorded with who, what, result and IP. The table is append-only. Security changes such as
   turning two-factor on and exports are recorded too.
 - Strict Content-Security-Policy (no inline scripts), frame denial and referrer policy.
-- Map tiles and address search call OpenStreetMap services, so those two hosts are allowed by the policy.
-  Everything else is served locally.
+- Map tiles are images, so the policy allows https images; address search goes through the server (`/geo`), never straight from the browser. Everything else is served locally.
 - SQL is parameterised everywhere, search text is escaped, and queries are checked for N+1 behaviour.
 - CI runs CodeQL, gitleaks and dependency review. See [SECURITY.md](SECURITY.md).
 
@@ -192,6 +191,7 @@ Everything in containers (app, MySQL and a mail inbox), with sample data:
 
 ```bash
 export JWT_SECRET=$(openssl rand -base64 48)
+export DB_PASSWORD=$(openssl rand -hex 16)
 docker compose up --build
 ```
 
@@ -280,7 +280,7 @@ deploy/        Nginx configuration and compose overlay
 guards, two-factor, invoices, exports, listing query counts and email flows.
 
 On every pull request CI runs the suite on Java 21 and again against MySQL 8.4, CodeQL, gitleaks,
-dependency review, a container build with a compose smoke test, and a check of the Nginx configuration.
+dependency review, a container build, validation of the compose files and a check of the Nginx configuration.
 
 ## Roadmap
 

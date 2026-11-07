@@ -49,4 +49,12 @@ class TotpTest {
     void theAuthenticatorLinkCarriesTheIssuerAndSecret() {
         assertThat(Totp.uri("Shop", "mo@example.com", "ABC")).startsWith("otpauth://totp/Shop:mo%40example.com?secret=ABC&issuer=Shop");
     }
-}
+
+    @Test
+    void codesTypedWithSpacesOrDashesAreAccepted() {
+        long now = System.currentTimeMillis();
+        long step = now / 30_000;
+        String code = Totp.code(RFC_SECRET, step);
+        assertThat(Totp.verify(RFC_SECRET, code.substring(0, 3) + " " + code.substring(3), now, null)).isEqualTo(step);
+        assertThat(Totp.verify(RFC_SECRET, code.substring(0, 3) + "-" + code.substring(3), now, null)).isEqualTo(step);
+    }}

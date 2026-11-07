@@ -83,8 +83,8 @@ jobs:
       - name: Build the image
         run: docker build -t spring-shop:ci .
       - name: Validate the Compose file
-        run: JWT_SECRET=$(openssl rand -base64 48) docker compose config --quiet
+        run: JWT_SECRET=$(openssl rand -base64 48) DB_PASSWORD=$(openssl rand -hex 16) docker compose config --quiet
       - name: Validate the Compose file with Nginx
-        run: JWT_SECRET=$(openssl rand -base64 48) docker compose -f compose.yaml -f deploy/compose.nginx.yaml config --quiet
+        run: JWT_SECRET=$(openssl rand -base64 48) DB_PASSWORD=$(openssl rand -hex 16) docker compose -f compose.yaml -f deploy/compose.nginx.yaml config --quiet
       - name: Check the Nginx configuration
         run: docker run --rm --add-host app:127.0.0.1 -v "$PWD/deploy/nginx/shop.conf:/etc/nginx/conf.d/default.conf:ro" -v "$PWD/deploy/nginx/proxy.conf:/etc/nginx/shop-proxy.conf:ro" nginx:1.27-alpine nginx -t

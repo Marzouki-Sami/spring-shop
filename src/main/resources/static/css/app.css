@@ -100,6 +100,7 @@ main { flex: 1; padding-bottom: 3rem; }
 [data-bs-theme="dark"] .btn-outline-primary { --bs-btn-hover-color: #12121c; --bs-btn-active-color: #12121c; }
 [data-bs-theme="dark"] .page-item.active .page-link, [data-bs-theme="dark"] .text-bg-primary { color: #12121c !important; }
 [data-bs-theme="dark"] .navbar-toggler-icon { filter: invert(1); }
+[data-bs-theme="dark"] .cart-count, [data-bs-theme="dark"] .chip:hover, [data-bs-theme="dark"] .chip.active { color: #12121c; }
 [data-bs-theme="dark"] .text-bg-light { background-color: var(--shop-line) !important; color: var(--bs-body-color) !important; }
 [data-bs-theme="dark"] .site-nav .navbar-brand { color: var(--shop-ink); }
 [data-bs-theme="dark"] .table { --bs-table-bg: transparent; }

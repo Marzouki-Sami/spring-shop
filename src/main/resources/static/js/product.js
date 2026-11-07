@@ -13,6 +13,8 @@
     var quantityInput = document.getElementById('quantity');
     var addButton = document.getElementById('add-to-cart');
     var selected = {};
+    // Without an active variant the page has no cart form, so there is nothing to drive.
+    if (!addButton || !quantityInput || !variantInput) { return; }
 
     function text(tag, className, content) {
         var element = document.createElement(tag);
