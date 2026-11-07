@@ -3,7 +3,6 @@
 <head th:replace="~{fragments/layout :: head('Coupons')}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: nav('coupons')}"></nav>
-<div th:replace="~{fragments/layout :: flash}"></div>
 <main class="container">
     <h1 class="h3 mb-3">Coupons</h1>
     <form class="panel mb-4" th:action="@{/manage/coupons}" th:object="${form}" method="post" novalidate>

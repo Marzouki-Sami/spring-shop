@@ -3,7 +3,6 @@
 <head th:replace="~{fragments/layout :: head('Stock')}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: nav('products')}"></nav>
-<div th:replace="~{fragments/layout :: flash}"></div>
 <main class="container">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -59,13 +58,7 @@
                     </tbody>
                 </table>
             </div>
-            <nav class="mt-3" aria-label="Pages" th:if="${history.totalPages > 1}">
-                <ul class="pagination">
-                    <li class="page-item" th:classappend="${history.first} ? 'disabled'"><a class="page-link" th:href="@{/manage/variants/{id}/stock(id=${variant.id},page=${history.number - 1})}">Previous</a></li>
-                    <li class="page-item disabled"><span class="page-link" th:text="${history.number + 1} + ' / ' + ${history.totalPages}">1 / 1</span></li>
-                    <li class="page-item" th:classappend="${history.last} ? 'disabled'"><a class="page-link" th:href="@{/manage/variants/{id}/stock(id=${variant.id},page=${history.number + 1})}">Next</a></li>
-                </ul>
-            </nav>
+            <nav th:replace="~{fragments/lists :: pages(${history}, @{/manage/variants/{id}/stock(id=${variant.id},page=${history.number - 1})}, @{/manage/variants/{id}/stock(id=${variant.id},page=${history.number + 1})}, '', 'mt-3')}"></nav>
         </div>
     </div>
 </main>

@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class StorefrontController {
 
-    static final int PAGE_SIZE = 12;
 
     private final ProductRepository products;
     private final ProductService productService;

@@ -42,7 +42,7 @@
         <div class="col-md-7">
             <span class="text-secondary text-uppercase small" th:text="${product.subcategory.category.title + ' · ' + product.subcategory.title}">Category</span>
             <h1 class="h2 mt-1" th:text="${product.name}">Product</h1>
-            <p class="price fs-3 my-3" id="price" th:text="${page.initialPrice}">0.00 €</p>
+            <p class="price fs-3 my-3" id="price" aria-live="polite" th:text="${page.initialPrice}">0.00 €</p>
             <p th:text="${product.description}" th:if="${product.description != null}">Description</p>
             <div id="options" class="mb-3" th:if="${page.optioned}">
                 <div class="opt-group mb-3" th:each="g : ${page.groups}" th:attr="data-type=${g.typeId}">
@@ -57,7 +57,7 @@
                     </label>
                 </div>
             </div>
-            <p class="mb-4" id="stock">
+            <p class="mb-4" id="stock" aria-live="polite">
                 <span class="badge text-bg-success" th:if="${product.stock > 5}"><i class="bi bi-check-circle"></i> In stock</span>
                 <span class="badge text-bg-warning" th:if="${product.stock > 0 and product.stock <= 5}">Only <span th:text="${product.stock}">3</span> left</span>
                 <span class="badge text-bg-danger" th:if="${product.stock == 0}">Sold out</span>
@@ -74,7 +74,7 @@
                 </form>
                 <a class="btn btn-outline-secondary btn-sm" sec:authorize="!isAuthenticated()" th:href="@{/login}" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"><i class="bi bi-heart"></i> Sign in to save</a>
             </div>
-            <p class="text-secondary small">SKU <code id="sku" th:text="${page.optioned} ? ${product.sku} : ${product.sku}">SKU</code></p>
+            <p class="text-secondary small">SKU <code id="sku" th:text="${product.sku}">SKU</code></p>
             <script type="application/json" id="variant-data" th:attr="data-initial=${page.initialVariantId}" th:utext="${page.variantsJson}" th:if="${page.optioned}"></script>
         </div>
     </div>
@@ -88,7 +88,6 @@
     </section>
 
     <section class="mt-5" id="reviews">
-        <div th:replace="~{fragments/layout :: flash}"></div>
         <h2 class="h4 mb-1">Reviews</h2>
         <p class="text-secondary mb-3" th:if="${average != null}">
             <span class="stars"><i class="bi" th:each="n : ${#numbers.sequence(1, 5)}" th:classappend="${n <= average + 0.5} ? 'bi-star-fill' : 'bi-star'"></i></span>

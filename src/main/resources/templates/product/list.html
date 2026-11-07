@@ -45,7 +45,7 @@
                             <a class="btn btn-sm btn-outline-secondary" th:unless="${item.optioned}" th:href="@{/manage/variants/{id}/stock(id=${item.defaultVariant.id})}">Stock</a>
                             <form th:action="@{/manage/products/{id}/delete(id=${item.id})}" method="post"
                                   data-confirm="Delete this item? This cannot be undone.">
-                                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                <button class="btn btn-sm btn-outline-danger" type="submit" th:attr="aria-label=${'Delete ' + item.name}">Delete</button>
                             </form>
                         </td>
                     </tr>

@@ -8,8 +8,8 @@
         <div class="position-relative mb-2">
             <label class="form-label" for="geo-search">Search for an address</label>
             <input class="form-control" id="geo-search" type="search" autocomplete="off" maxlength="200"
-                   placeholder="Start typing a street or a place" role="combobox" aria-expanded="false" aria-controls="geo-results" aria-autocomplete="list">
-            <ul class="geo-results list-unstyled" id="geo-results" role="listbox" hidden></ul>
+                   placeholder="Start typing a street or a place" aria-controls="geo-results">
+            <ul class="geo-results list-unstyled" id="geo-results" aria-label="Matching addresses" hidden></ul>
         </div>
         <div class="d-flex flex-wrap gap-2">
             <button type="button" class="btn btn-outline-secondary btn-sm" id="geo-locate"><i class="bi bi-crosshair"></i> Use my current location</button>

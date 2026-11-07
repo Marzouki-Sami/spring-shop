@@ -3,7 +3,6 @@
 <head th:replace="~{fragments/layout :: head('Wishlist')}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: nav('account')}"></nav>
-<div th:replace="~{fragments/layout :: flash}"></div>
 <main class="container">
     <h1 class="h3 mb-4">My wishlist</h1>
     <section class="panel p-0 mb-4" th:if="${!page.empty or !query.q.empty}">
@@ -23,13 +22,7 @@
             </form>
         </div>
     </div>
-    <nav class="mt-4" aria-label="Pages" th:if="${page.totalPages > 1}">
-        <ul class="pagination justify-content-center">
-            <li class="page-item" th:classappend="${page.first} ? 'disabled'"><a class="page-link" th:href="${links.to(page.number - 1)}">Previous</a></li>
-            <li class="page-item disabled"><span class="page-link" th:text="${page.number + 1} + ' / ' + ${page.totalPages}">1 / 2</span></li>
-            <li class="page-item" th:classappend="${page.last} ? 'disabled'"><a class="page-link" th:href="${links.to(page.number + 1)}">Next</a></li>
-        </ul>
-    </nav></main>
+    <nav th:replace="~{fragments/lists :: pages(${page}, ${links.to(page.number - 1)}, ${links.to(page.number + 1)}, 'justify-content-center', 'mt-4')}"></nav></main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 <th:block th:replace="~{fragments/layout :: scripts}"></th:block>
 <script th:src="@{/js/manage.js}"></script>

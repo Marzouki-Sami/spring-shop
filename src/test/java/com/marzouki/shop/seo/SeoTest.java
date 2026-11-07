@@ -154,7 +154,7 @@ class SeoTest {
 
     @Test
     void structuredDataCannotCloseItsScriptTag() {
-        assertThat(SeoService.escapeForScript("{\"a\":\"</script><b>&\"}")).doesNotContain("<").doesNotContain(">").doesNotContain("&")
+        assertThat(com.marzouki.shop.common.ScriptJson.escape("{\"a\":\"</script><b>&\"}")).doesNotContain("<").doesNotContain(">").doesNotContain("&")
                 .contains("\\u003c/script\\u003e");
     }
 

@@ -67,7 +67,6 @@
     // --- search ---------------------------------------------------------------------------
     function closeResults() {
         results.hidden = true;
-        searchInput.setAttribute('aria-expanded', 'false');
     }
 
     function showResults(places) {
@@ -80,7 +79,6 @@
         }
         places.forEach(function (place) {
             var item = document.createElement('li');
-            item.setAttribute('role', 'option');
             var button = document.createElement('button');
             button.type = 'button';
             button.textContent = place.label;
@@ -93,7 +91,6 @@
             results.append(item);
         });
         results.hidden = false;
-        searchInput.setAttribute('aria-expanded', 'true');
     }
 
     searchInput.addEventListener('input', function () {

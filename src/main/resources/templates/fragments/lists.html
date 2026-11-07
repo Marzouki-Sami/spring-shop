@@ -31,13 +31,19 @@
 </form>
 <div th:fragment="pager(page, links)" class="panel-footer d-flex flex-wrap justify-content-between align-items-center gap-2" th:if="${page.totalElements > 0}">
     <span class="small text-secondary" th:text="'Showing ' + (${page.number} * ${page.size} + 1) + '-' + (${page.number} * ${page.size} + ${page.numberOfElements}) + ' of ' + ${page.totalElements}">Showing 1-25 of 60</span>
-    <nav aria-label="Pages" th:if="${page.totalPages > 1}">
-        <ul class="pagination pagination-sm mb-0">
-            <li class="page-item" th:classappend="${page.first} ? 'disabled'"><a class="page-link" th:href="${links.to(page.number - 1)}">Previous</a></li>
-            <li class="page-item disabled"><span class="page-link" th:text="${page.number + 1} + ' / ' + ${page.totalPages}">1 / 3</span></li>
-            <li class="page-item" th:classappend="${page.last} ? 'disabled'"><a class="page-link" th:href="${links.to(page.number + 1)}">Next</a></li>
-        </ul>
-    </nav>
+    <th:block th:replace="~{:: pages(${page}, ${links.to(page.number - 1)}, ${links.to(page.number + 1)}, 'pagination-sm mb-0', '')}"></th:block>
 </div>
-</body>
+<nav th:fragment="pages(page, prev, next, listClass, navClass)" aria-label="Pages" th:class="${navClass}" th:if="${page.totalPages > 1}">
+    <ul class="pagination" th:classappend="${listClass}">
+        <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+            <span class="page-link" th:if="${page.first}" aria-disabled="true">Previous</span>
+            <a class="page-link" th:unless="${page.first}" th:href="${prev}" rel="prev">Previous</a>
+        </li>
+        <li class="page-item disabled"><span class="page-link" th:text="${page.number + 1} + ' / ' + ${page.totalPages}">1 / 3</span></li>
+        <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+            <span class="page-link" th:if="${page.last}" aria-disabled="true">Next</span>
+            <a class="page-link" th:unless="${page.last}" th:href="${next}" rel="next">Next</a>
+        </li>
+    </ul>
+</nav></body>
 </html>

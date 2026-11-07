@@ -73,14 +73,9 @@ public class SeoService {
         return new Seo(description, canonical, image, "product", false, safeJson(data));
     }
 
-    /** JSON that cannot close the script tag it is placed in: "<" is written as a unicode escape. */
-    static String escapeForScript(String json) {
-        return json.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029");
-    }
-
     private String safeJson(Map<String, Object> data) {
         try {
-            return escapeForScript(json.writeValueAsString(data));
+            return com.marzouki.shop.common.ScriptJson.escape(json.writeValueAsString(data));
         } catch (JsonProcessingException e) {
             return null;
         }

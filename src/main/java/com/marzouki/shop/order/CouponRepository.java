@@ -14,8 +14,6 @@ public interface CouponRepository extends JpaRepository<Coupon, Long>,
 
     boolean existsByCodeIgnoreCase(String code);
 
-    List<Coupon> findAllByOrderByCreatedAtDescIdDesc();
-
     /** Claims one use atomically; returns 0 when the limit was reached in the meantime. */
     @Modifying(flushAutomatically = true)
     @Query("update Coupon c set c.usedCount = c.usedCount + 1 where c.id = :id and (c.maxUses is null or c.usedCount < c.maxUses)")

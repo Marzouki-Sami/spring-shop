@@ -3,7 +3,6 @@
 <head th:replace="~{fragments/layout :: head('Order')}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: nav(${manager} ? 'orders' : 'account')}"></nav>
-<div th:replace="~{fragments/layout :: flash}"></div>
 <main class="container">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">

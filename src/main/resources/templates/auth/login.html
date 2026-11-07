@@ -7,7 +7,6 @@
     <div class="auth-card">
         <h1 class="h4 mb-1">Welcome back</h1>
         <p class="text-secondary mb-4">Sign in to see your account.</p>
-        <div th:replace="~{fragments/layout :: flash}"></div>
         <div class="alert alert-danger" role="alert" th:if="${param.error}">Wrong email or password, or the account is temporarily locked after too many attempts.</div>
         <form th:action="@{/login}" method="post" novalidate>
             <div class="mb-3">
