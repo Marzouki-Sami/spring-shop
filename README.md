@@ -16,10 +16,14 @@ Taken from the `demo` profile with its sample data.
 | ![Storefront](docs/screenshots/storefront-light.png) | ![Storefront in dark mode](docs/screenshots/storefront-dark.png) |
 | ![Product list](docs/screenshots/products-light.png) | ![Product page with picture carousel](docs/screenshots/product-dark.png) |
 
+| Product with options | Orders |
+| --- | --- |
+| ![Product page with size and colour options](docs/screenshots/product-options-light.png) | ![Orders](docs/screenshots/orders-light.png) |
+
 | Dashboard | Variants workspace |
 | --- | --- |
 | ![Dashboard](docs/screenshots/dashboard-light.png) | ![Variants table with bulk actions](docs/screenshots/variants-light.png) |
-| ![Dashboard in dark mode](docs/screenshots/dashboard-dark.png) | ![Orders](docs/screenshots/orders-light.png) |
+| ![Dashboard in dark mode](docs/screenshots/dashboard-dark.png) | |
 
 <img src="docs/screenshots/storefront-mobile.png" alt="Storefront on a phone" width="260"> <img src="docs/screenshots/products-mobile.png" alt="Product list on a phone" width="260">
 ## Contents
