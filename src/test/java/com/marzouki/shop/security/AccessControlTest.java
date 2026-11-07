@@ -78,4 +78,22 @@ class AccessControlTest {
     void unknownPagesGiveANotFoundStatus() throws Exception {
         mvc.perform(get("/no-such-page")).andExpect(status().isNotFound());
     }
-}
+
+    @Test
+    @WithMockUser(roles = "CUSTOMER")
+    void customersCannotChangeUsersOrExport() throws Exception {
+        for (String action : new String[] {"role", "enabled", "reset-2fa", "unlock"}) {
+            mvc.perform(post("/admin/users/1/" + action).with(csrf())).andExpect(status().isForbidden());
+        }
+        mvc.perform(get("/manage/orders/export")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "MANAGER")
+    void managersCannotChangeUsers() throws Exception {
+        for (String action : new String[] {"role", "enabled", "reset-2fa", "unlock"}) {
+            mvc.perform(post("/admin/users/1/" + action).with(csrf())).andExpect(status().isForbidden());
+        }
+        mvc.perform(get("/admin/audit")).andExpect(status().isForbidden());
+        mvc.perform(get("/admin/settings")).andExpect(status().isForbidden());
+    }}

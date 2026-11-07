@@ -45,8 +45,8 @@
             <p class="price fs-3 my-3" id="price" aria-live="polite" th:text="${page.initialPrice}">0.00 €</p>
             <p th:text="${product.description}" th:if="${product.description != null}">Description</p>
             <div id="options" class="mb-3" th:if="${page.optioned}">
-                <div class="opt-group mb-3" th:each="g : ${page.groups}" th:attr="data-type=${g.typeId}">
-                    <div class="fw-semibold mb-2"><span th:text="${g.name}">Size</span>: <span class="text-secondary fw-normal" data-selected-label>Choose</span></div>
+                <fieldset class="opt-group mb-3" th:each="g : ${page.groups}" th:attr="data-type=${g.typeId}">
+                    <legend class="fs-6 fw-semibold mb-2"><span th:text="${g.name}">Size</span>: <span class="text-secondary fw-normal" data-selected-label>Choose</span></legend>
                     <label class="opt" th:each="c : ${g.choices}" th:classappend="${g.color} ? 'opt-color'">
                         <input type="radio" th:name="'opt-' + ${g.typeId}" th:value="${c.id}">
                         <span class="opt-face">
@@ -55,7 +55,7 @@
                         </span>
                         <span class="visually-hidden" th:if="${g.color}" th:text="${c.label}">Black</span>
                     </label>
-                </div>
+                </fieldset>
             </div>
             <p class="mb-4" id="stock" aria-live="polite">
                 <span class="badge text-bg-success" th:if="${product.stock > 5}"><i class="bi bi-check-circle"></i> In stock</span>

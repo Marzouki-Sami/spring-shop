@@ -66,9 +66,21 @@ public class DemoDataLoader implements ApplicationRunner {
     private final DemoImageFactory imageFactory;
     private final com.marzouki.shop.media.ProductImageService imageService;
 
+    @org.springframework.beans.factory.annotation.Value("${app.site.url}")
+    private String siteUrl;
+
+    /** The demo accounts have no two-factor sign-in, so the demo profile must never face the internet. */
+    private void requireLocalAddress() {
+        String host = java.net.URI.create(siteUrl).getHost();
+        if (!"localhost".equals(host) && !"127.0.0.1".equals(host)) {
+            throw new IllegalStateException("The demo profile only runs on a localhost address, but APP_BASE_URL is " + siteUrl);
+        }
+    }
+
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        requireLocalAddress();
         if (userRepository.count() > 0 || products.count() > 0) {
             return;
         }

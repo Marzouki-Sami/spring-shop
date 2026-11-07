@@ -34,7 +34,7 @@ public final class Totp {
      * @return the step the code belongs to, or -1 when it is wrong or was already used
      */
     public static long verify(String secret, String input, long epochMillis, Long lastUsedStep) {
-        String code = input == null ? "" : input.replaceAll("\\s+", "");
+        String code = input == null ? "" : input.replaceAll("[\\s-]", "");
         if (code.length() != 6 || !code.chars().allMatch(Character::isDigit)) {
             return -1;
         }

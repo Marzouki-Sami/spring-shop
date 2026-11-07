@@ -29,19 +29,23 @@ class GeoDisabledTest {
     @Autowired UserService users;
     @Autowired UserRepository userRepository;
 
+    private User created;
+
     @AfterEach
     void cleanUp() {
-        userRepository.deleteAll();
+        if (created != null) {
+            userRepository.deleteById(created.getId());
+        }
     }
 
     @Test
     void noMapAndNoLookup() throws Exception {
-        User cy = users.create("Cy", "Customer", "cy@example.com", TestPasswords.strong(), Role.CUSTOMER);
+        User cy = created = users.create("Cy", "Customer", "cy@example.com", TestPasswords.strong(), Role.CUSTOMER);
         var asCy = user(new AppUserDetails(cy));
         mvc.perform(get("/account/addresses/new").with(asCy)).andExpect(status().isOk())
                 .andExpect(content().string(containsString("data-geo=\"false\"")))
                 .andExpect(content().string(containsString("name=\"address\"")))
                 .andExpect(content().string(not(containsString("/webjars/leaflet/"))));
-        mvc.perform(get("/geo/search").param("q", "rue test").with(asCy)).andExpect(status().isServiceUnavailable());
+        mvc.perform(get("/geo/search").param("q", "main street").with(asCy)).andExpect(status().isServiceUnavailable());
     }
 }
